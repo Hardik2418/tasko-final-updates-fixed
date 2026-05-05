@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'Tasko' %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <a href="/">📋 Tasko</a>
+            </div>
+            <ul class="navbar-menu">
+                <% if (typeof userId !== 'undefined' && userId) { %>
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/projects">Projects</a></li>
+                    <li><a href="/my-tasks">My Tasks</a></li>
+                    <li><span class="navbar-user"><%= typeof user !== 'undefined' ? user.name : 'User' %></span></li>
+                    <li><a href="/api/auth/logout" class="logout-btn">Logout</a></li>
+                <% } else { %>
+                    <li><a href="/login">Login</a></li>
+                    <li><a href="/signup" class="signup-btn">Sign Up</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <%- body %>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Tasko. All rights reserved.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

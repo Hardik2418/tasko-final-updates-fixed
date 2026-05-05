@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Tasko</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <a href="/">📋 Tasko</a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="/login">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="auth-container">
+            <div class="auth-box">
+                <h2>Create Account</h2>
+                
+                <!-- Role Info Box -->
+                <div class="role-info">
+                    <h3>Choose Your Role:</h3>
+                    <div class="role-options">
+                        <div class="role-item">
+                            <strong>👨‍💼 Admin</strong>
+                            <p>Full access: Create projects, assign tasks, manage employees, approve task completion</p>
+                        </div>
+                        <div class="role-item">
+                            <strong>👤 Employee</strong>
+                            <p>Limited access: View assigned tasks, update task status, submit completion requests</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form action="/api/auth/register" method="POST" class="auth-form">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Select Your Role</label>
+                        <select id="role" name="role" required>
+                            <option value="">-- Select Role --</option>
+                            <option value="admin">Admin - Full Access (Manage projects, tasks, employees)</option>
+                            <option value="member">Employee - Limited Access (View assigned tasks only)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Sign Up</button>
+                </form>
+                <p class="auth-link">Already have an account? <a href="/login">Login here</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Tasko. All rights reserved.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>

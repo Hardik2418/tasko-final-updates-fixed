@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details - Tasko</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-logo">
+                <a href="/">📋 Tasko</a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="/dashboard">Dashboard</a></li>
+                <% if (user.role === 'admin') { %>
+                    <li><a href="/admin-panel">Admin Panel</a></li>
+                <% } %>
+                <li><a href="/projects">Projects</a></li>
+                <li><a href="/my-tasks">My Tasks</a></li>
+                <% if (user.role === 'admin') { %>
+                    <li>
+                        <span class="notification-icon" onclick="toggleNotifications()">
+                            🔔
+                            <span id="unreadCount" class="unread-badge" style="display: none;">0</span>
+                        </span>
+                        <div id="notificationDropdown" class="notification-dropdown" style="display: none;">
+                            <div class="notification-header">
+                                <h3>Notifications</h3>
+                                <button onclick="markAllAsRead()" class="btn btn-small">Mark All Read</button>
+                            </div>
+                            <div id="notificationList" class="notification-list"></div>
+                        </div>
+                    </li>
+                <% } %>
+                <li><span class="navbar-user"><%= user.name %> <span style="color: #888;">(<%= user.role === 'admin' ? 'Admin' : 'Employee' %>)</span></span></li>
+                <li><a href="/api/auth/logout" class="logout-btn">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="project-detail-container">
+            <div class="project-header">
+                <div>
+                    <h1><%= project.name %></h1>
+                    <p class="project-description"><%= project.description %></p>
+                    <p class="project-creator">Created by: <strong><%= project.creator.name %></strong></p>
+                </div>
+                <% if (isCreator || isAdmin) { %>
+                    <button class="btn btn-primary" onclick="showCreateTaskForm()">+ Add Task</button>
+                <% } %>
+            </div>
+
+            <section class="project-members-section">
+                <h2>Team Members</h2>
+                <div class="members-container">
+                    <% project.members.forEach(member => { %>
+                        <div class="member-item">
+                            <span><%= member.name %></span>
+                            <span class="member-email"><%= member.email %></span>
+                            <% if (isCreator || isAdmin) { %>
+                                <button class="btn btn-small btn-danger" onclick="removeMember('<%= member._id %>')">Remove</button>
+                            <% } %>
+                        </div>
+                    <% }); %>
+                </div>
+                <% if (isCreator || isAdmin) { %>
+                    <div class="add-member-section">
+                        <input type="email" id="memberEmail" placeholder="Enter member email">
+                        <button class="btn btn-small" onclick="addMember()">Add Member</button>
+                    </div>
+                <% } %>
+            </section>
+
+            <section class="tasks-section">
+                <h2>Tasks</h2>
+                <div class="tasks-filters">
+                    <select id="statusFilter" onchange="filterTasks()">
+                        <option value="">All Tasks</option>
+                        <option value="To Do">To Do</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </div>
+
+                <div id="tasksList" class="tasks-container">
+                    <% if (tasks && tasks.length > 0) { %>
+                        <% tasks.forEach(task => { %>
+                            <div class="task-item" data-status="<%= task.status %>">
+                                <div class="task-header">
+                                    <h4><%= task.title %></h4>
+                                    <span class="priority-badge <%= task.priority.toLowerCase() %>"><%= task.priority %></span>
+                                </div>
+                                <p class="task-description"><%= task.description %></p>
+                                <div class="task-meta">
+                                    <span class="status-badge"><%= task.status %></span>
+                                    <span><%= task.assignee ? `Assigned to: ${task.assignee.name}` : 'Unassigned' %></span>
+                                    <% if (task.dueDate) { %>
+                                        <span>Due: <%= new Date(task.dueDate).toLocaleDateString() %></span>
+                                    <% } %>
+                                </div>
+                                <% if (isCreator || isAdmin) { %>
+                                    <div class="task-actions">
+                                        <button class="btn btn-small" onclick="editTask('<%= task._id %>')">Edit</button>
+                                        <button class="btn btn-small btn-danger" onclick="deleteTask('<%= task._id %>')">Delete</button>
+                                    </div>
+                                <% } else if (task.assignee && task.assignee._id.toString() === userId) { %>
+                                    <div class="task-actions">
+                                        <select class="btn btn-small" onchange="updateTaskStatus('<%= task._id %>', this.value)">
+                                            <option value="">Update Status</option>
+                                            <option value="To Do">To Do</option>
+                                            <option value="In Progress">In Progress</option>
+                                            <option value="Done">Done</option>
+                                        </select>
+                                    </div>
+                                <% } %>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <p class="empty-message">No tasks yet. <% if (isCreator || isAdmin) { %><a href="#" onclick="showCreateTaskForm()">Create one</a><% } %></p>
+                    <% } %>
+                </div>
+            </section>
+        </div>
+
+        <!-- Create Task Modal - ADMIN ONLY -->
+        <% if (isAdmin || isCreator) { %>
+        <div id="createTaskModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('createTaskModal')">&times;</span>
+                <h2>Create New Task</h2>
+                <form id="createTaskForm" class="form">
+                    <input type="hidden" id="projectId" value="<%= project._id %>">
+                    <div class="form-group">
+                        <label for="taskTitle">Task Title</label>
+                        <input type="text" id="taskTitle" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <textarea id="taskDescription" name="description" rows="4"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskPriority">Priority</label>
+                        <select id="taskPriority" name="priority">
+                            <option value="Low">Low</option>
+                            <option value="Medium" selected>Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDueDate">Due Date</label>
+                        <input type="date" id="taskDueDate" name="dueDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskAssignee">Assign To</label>
+                        <select id="taskAssignee" name="assignee">
+                            <option value="">-- Unassigned --</option>
+                            <% project.members.forEach(member => { %>
+                                <option value="<%= member._id %>"><%= member.name %> (<%= member.email %>)</option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Task</button>
+                </form>
+            </div>
+        </div>
+        <% } %>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Tasko. All rights reserved.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script src="/js/project-detail.js"></script>
+</body>
+</html>
